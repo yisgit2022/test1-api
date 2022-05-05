@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="7051a083-b4ce-4cbb-b34f-a0169b344bd3" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="process-data-transformation-Flow" doc:id="fbb24736-efd9-460e-84fc-46a12d4495bf" >
+		<http:listener doc:name="Listener" doc:id="4daa13f6-fe2f-412b-8c5d-50e3d51adb96" config-ref="HTTP_Listener_config" path="/test1"/>
+		<set-variable value="#[attributes.queryParams.currency]" doc:name="Set Variable" doc:id="26e03d06-b6b8-47a3-9168-858b668443ce" variableName="currency"/>
+		<ee:transform doc:name="Transform Message" doc:id="a62e1b14-b5f8-411b-97ce-7e0493077e02" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="10634c69-a7b2-4272-952e-22079d7e6711" >
+			<when expression="#[attributes.queryParams.currency == 'Birr']">
+				<ee:transform doc:name="Transform Message" doc:id="3b07646c-e61e-446b-a7f8-d36ad73ba565" >
+					<ee:message >
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="country" ><![CDATA["Ethiopia"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<when expression="#[attributes.queryParams.currency == 'Dollar']">
+				<ee:transform doc:name="Transform Message" doc:id="56c2dc1d-7e41-4604-a8b5-6d76106814f7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+"USA"]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="61cb4d78-8b83-44e9-a9d2-6db2bf6ba91a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+"no such type of Currency"]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>
